@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: agentic-text-to-sql-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: CORS_ALLOW_ORIGINS
+        sync: false
+      - key: DEMO_MODE
+        value: "true"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "12"
+      - key: QUERY_ROW_LIMIT
+        value: "500"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OLLAMA_BASE_URL
+        sync: false
+      - key: LLM_ACCESS_TOKEN
+        sync: false
+
