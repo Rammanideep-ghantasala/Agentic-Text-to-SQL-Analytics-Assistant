@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     cors_allow_origins: str = Field(default="", alias="CORS_ALLOW_ORIGINS")
 
     llm_access_token: Optional[str] = Field(default=None, alias="LLM_ACCESS_TOKEN")
-    rate_limit_per_minute: int = Field(default=5, alias="RATE_LIMIT_PER_MINUTE")
+    rate_limit_per_minute: int = Field(default=10, alias="RATE_LIMIT_PER_MINUTE")
     query_row_limit: int = Field(default=200, alias="QUERY_ROW_LIMIT")
 
     @property

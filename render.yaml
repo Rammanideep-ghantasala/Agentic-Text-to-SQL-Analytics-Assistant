@@ -15,7 +15,7 @@ services:
       - key: DEMO_MODE
         value: "false"
       - key: RATE_LIMIT_PER_MINUTE
-        value: "5"
+        value: "10"
       - key: QUERY_ROW_LIMIT
         value: "200"
       - key: OPENAI_API_KEY

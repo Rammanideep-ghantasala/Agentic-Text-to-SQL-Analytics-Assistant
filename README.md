@@ -167,7 +167,7 @@ Backend:
 | `OLLAMA_BASE_URL` | Optional | Enables Ollama model calls, for example `http://localhost:11434`. |
 | `OLLAMA_MODEL` | Optional | Defaults to `llama2`. |
 | `LLM_ACCESS_TOKEN` | Optional | Requires frontend or API clients to send `X-LLM-Access-Token` for expensive calls. |
-| `RATE_LIMIT_PER_MINUTE` | Optional | In-memory per-IP rate limit. |
+| `RATE_LIMIT_PER_MINUTE` | Optional | In-memory per-IP rate limit. Defaults to `10`. |
 | `QUERY_ROW_LIMIT` | Optional | Default result row cap for safe query execution. |
 
 Frontend:
