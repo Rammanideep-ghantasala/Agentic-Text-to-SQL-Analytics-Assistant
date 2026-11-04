@@ -161,9 +161,9 @@ Backend:
 | `DATABASE_URL` | Production yes | Supabase or Postgres connection string. If missing, local SQLite demo mode is used. |
 | `FRONTEND_ORIGIN` | Yes | Vercel frontend URL for CORS. |
 | `CORS_ALLOW_ORIGINS` | Optional | Comma-separated extra allowed origins. |
-| `DEMO_MODE` | Optional | Force demo mode when `true`. |
+| `DEMO_MODE` | Optional | Set to `false` for real OpenAI SQL generation. If no LLM key is configured, the app safely falls back to demo mode. |
 | `OPENAI_API_KEY` | Optional | Enables OpenAI SQL generation. |
-| `OPENAI_MODEL` | Optional | Defaults to `gpt-4o`; set to your GPT-4-class model. |
+| `OPENAI_MODEL` | Optional | Defaults to `gpt-4o-mini` for low-cost resume demos. |
 | `OLLAMA_BASE_URL` | Optional | Enables Ollama model calls, for example `http://localhost:11434`. |
 | `OLLAMA_MODEL` | Optional | Defaults to `llama2`. |
 | `LLM_ACCESS_TOKEN` | Optional | Requires frontend or API clients to send `X-LLM-Access-Token` for expensive calls. |
@@ -206,8 +206,10 @@ The schema includes:
    - `DATABASE_URL`
    - `FRONTEND_ORIGIN=https://your-vercel-app.vercel.app`
    - `CORS_ALLOW_ORIGINS=https://your-vercel-app.vercel.app`
-   - `DEMO_MODE=true` for public demo deployments
-   - Optional `OPENAI_API_KEY`, `OPENAI_MODEL`, `OLLAMA_BASE_URL`, `OLLAMA_MODEL`
+   - `DEMO_MODE=false` for real random-question LLM mode
+   - `OPENAI_API_KEY`
+   - `OPENAI_MODEL=gpt-4o-mini`
+   - Optional `OLLAMA_BASE_URL`, `OLLAMA_MODEL`
    - Optional `LLM_ACCESS_TOKEN`
 7. Deploy and confirm `https://your-render-service.onrender.com/health`.
 

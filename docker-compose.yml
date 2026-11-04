@@ -23,11 +23,16 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/text2sql
-      FRONTEND_ORIGIN: http://localhost:3000
-      CORS_ALLOW_ORIGINS: http://localhost:3000
-      DEMO_MODE: "true"
-      QUERY_ROW_LIMIT: "500"
-      RATE_LIMIT_PER_MINUTE: "12"
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:3000}
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-http://localhost:3000}
+      DEMO_MODE: ${DEMO_MODE:-false}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama2}
+      LLM_ACCESS_TOKEN: ${LLM_ACCESS_TOKEN:-}
+      QUERY_ROW_LIMIT: ${QUERY_ROW_LIMIT:-200}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-5}
     ports:
       - "8000:8000"
 
@@ -37,7 +42,7 @@ services:
     depends_on:
       - backend
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     volumes:
       - ./frontend:/app
     command: sh -c "npm install && npm run dev"

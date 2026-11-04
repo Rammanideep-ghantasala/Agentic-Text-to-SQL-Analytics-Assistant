@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=("../.env", ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     database_url: Optional[str] = Field(default=None, alias="DATABASE_URL")
 
     openai_api_key: Optional[str] = Field(default=None, alias="OPENAI_API_KEY")
-    openai_model: str = Field(default="gpt-4o", alias="OPENAI_MODEL")
+    openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
     ollama_base_url: Optional[str] = Field(default=None, alias="OLLAMA_BASE_URL")
     ollama_model: str = Field(default="llama2", alias="OLLAMA_MODEL")
 
@@ -29,8 +29,8 @@ class Settings(BaseSettings):
     cors_allow_origins: str = Field(default="", alias="CORS_ALLOW_ORIGINS")
 
     llm_access_token: Optional[str] = Field(default=None, alias="LLM_ACCESS_TOKEN")
-    rate_limit_per_minute: int = Field(default=12, alias="RATE_LIMIT_PER_MINUTE")
-    query_row_limit: int = Field(default=500, alias="QUERY_ROW_LIMIT")
+    rate_limit_per_minute: int = Field(default=5, alias="RATE_LIMIT_PER_MINUTE")
+    query_row_limit: int = Field(default=200, alias="QUERY_ROW_LIMIT")
 
     @property
     def effective_demo_mode(self) -> bool:

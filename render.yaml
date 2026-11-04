@@ -13,13 +13,15 @@ services:
       - key: CORS_ALLOW_ORIGINS
         sync: false
       - key: DEMO_MODE
-        value: "true"
+        value: "false"
       - key: RATE_LIMIT_PER_MINUTE
-        value: "12"
+        value: "5"
       - key: QUERY_ROW_LIMIT
-        value: "500"
+        value: "200"
       - key: OPENAI_API_KEY
         sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
       - key: OLLAMA_BASE_URL
         sync: false
       - key: LLM_ACCESS_TOKEN
