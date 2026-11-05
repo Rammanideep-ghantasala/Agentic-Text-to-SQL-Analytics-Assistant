@@ -18,6 +18,8 @@ services:
         value: "10"
       - key: QUERY_ROW_LIMIT
         value: "200"
+      - key: ENABLE_MATPLOTLIB_EXPORT
+        value: "false"
       - key: OPENAI_API_KEY
         sync: false
       - key: OPENAI_MODEL

@@ -94,6 +94,8 @@ def approve_query(query_id: str) -> QueryExecutionResponse:
         return QueryExecutionResponse(**agent.get_execution_payload(state))
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Approval failed: {exc}") from exc
 
 
 @app.post("/review/{query_id}/edit", response_model=QueryExecutionResponse)
@@ -103,6 +105,8 @@ def edit_query(query_id: str, payload: ReviewEditRequest) -> QueryExecutionRespo
         return QueryExecutionResponse(**agent.get_execution_payload(state))
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Edited SQL execution failed: {exc}") from exc
 
 
 @app.post("/review/{query_id}/reject")

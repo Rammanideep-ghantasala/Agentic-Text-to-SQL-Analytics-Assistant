@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     llm_access_token: Optional[str] = Field(default=None, alias="LLM_ACCESS_TOKEN")
     rate_limit_per_minute: int = Field(default=10, alias="RATE_LIMIT_PER_MINUTE")
     query_row_limit: int = Field(default=200, alias="QUERY_ROW_LIMIT")
+    enable_matplotlib_export: bool = Field(default=False, alias="ENABLE_MATPLOTLIB_EXPORT")
 
     @property
     def effective_demo_mode(self) -> bool:

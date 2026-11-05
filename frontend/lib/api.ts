@@ -64,13 +64,22 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error("Missing NEXT_PUBLIC_API_URL. Add your Render backend URL in Vercel Environment Variables.");
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers || {})
-    }
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...(init?.headers || {})
+      }
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Network request failed";
+    throw new Error(
+      `${message}. Check that NEXT_PUBLIC_API_URL points to your Render backend and that Render CORS allows this Vercel domain.`
+    );
+  }
+
   if (!response.ok) {
     const body = await response.json().catch(() => ({ detail: response.statusText }));
     throw new Error(typeof body.detail === "string" ? body.detail : "Request failed");

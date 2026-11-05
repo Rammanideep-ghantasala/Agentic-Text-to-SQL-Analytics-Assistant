@@ -328,7 +328,7 @@ class TextToSQLAgent:
     def generate_visualization(self, state: AgentState) -> AgentState:
         rows = state.get("rows", [])
         plotly_json = generate_plotly_json(rows, state["question"], state.get("chart_hint"))
-        png = generate_matplotlib_png(rows, state.get("chart_hint"))
+        png = generate_matplotlib_png(rows, state.get("chart_hint")) if self.settings.enable_matplotlib_export else None
         return {"plotly_json": plotly_json, "chart_png_base64": png}
 
     def store_execution_result(self, state: AgentState, feedback: Optional[str]) -> AgentState:

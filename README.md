@@ -169,6 +169,7 @@ Backend:
 | `LLM_ACCESS_TOKEN` | Optional | Requires frontend or API clients to send `X-LLM-Access-Token` for expensive calls. |
 | `RATE_LIMIT_PER_MINUTE` | Optional | In-memory per-IP rate limit. Defaults to `10`. |
 | `QUERY_ROW_LIMIT` | Optional | Default result row cap for safe query execution. |
+| `ENABLE_MATPLOTLIB_EXPORT` | Optional | Set to `true` to generate PNG chart exports. Defaults to `false` for lighter Render deployments. |
 
 Frontend:
 
