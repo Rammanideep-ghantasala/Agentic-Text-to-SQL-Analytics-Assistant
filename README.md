@@ -219,8 +219,9 @@ The schema includes:
 2. Set the Vercel root directory to `frontend`.
 3. Add environment variable:
    - `NEXT_PUBLIC_API_URL=https://your-render-service.onrender.com`
-4. Deploy.
-5. Copy the Vercel URL into Render:
+4. Keep the framework preset as `Next.js`; Vercel should use `npm install` and `npm run build` from `frontend`.
+5. Deploy.
+6. Copy the Vercel URL into Render:
    - `FRONTEND_ORIGIN`
    - `CORS_ALLOW_ORIGINS`
 

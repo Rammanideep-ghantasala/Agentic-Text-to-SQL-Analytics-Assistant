@@ -1,4 +1,8 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const rawApiUrl =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "development" ? "http://localhost:8000" : "");
+
+export const API_URL = rawApiUrl.replace(/\/+$/, "");
 
 export type HealthResponse = {
   status: string;
@@ -56,6 +60,10 @@ export type HistoryItem = {
 };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  if (!API_URL) {
+    throw new Error("Missing NEXT_PUBLIC_API_URL. Add your Render backend URL in Vercel Environment Variables.");
+  }
+
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: {
