@@ -13,4 +13,12 @@ def test_blocks_destructive_user_intent_before_llm() -> None:
 
     assert result["provider"] == "scope_guard"
     assert "Unsafe request blocked" in result["sql"]
-    assert "Only read-only SELECT" in result["error"]
+    assert "error" not in result
+
+
+def test_out_of_scope_question_returns_approvable_message_query() -> None:
+    result = generate_sql("Show me transgender students", "", "", {}, FakeSettings())
+
+    assert result["provider"] == "scope_guard"
+    assert "outside the available business analytics schema" in result["sql"]
+    assert "error" not in result

@@ -143,6 +143,11 @@ export default function Home() {
   const chart = result?.plotly_json;
   const hasRows = Boolean(result?.rows?.length);
   const pngUrl = useMemo(() => (result ? `${API_URL}/chart/${result.query_id}?format=png` : ""), [result]);
+  const answerMessage = useMemo(() => {
+    const row = result?.rows?.[0];
+    const answer = row?.answer;
+    return typeof answer === "string" ? answer : "";
+  }, [result]);
   const draftHasIssue = Boolean(
     draft?.error || ["generation_failed", "validation_failed"].includes(draft?.status || "")
   );
@@ -319,6 +324,8 @@ export default function Home() {
               <div className="empty result-error">
                 Please regenerate the query as there are some errors in the question.
               </div>
+            ) : answerMessage ? (
+              <div className="empty result-message">{answerMessage}</div>
             ) : hasRows ? (
               <div className="table-wrap">
                 <table>
@@ -353,7 +360,9 @@ export default function Home() {
               </a>
             )}
           </div>
-          {chart?.data?.length ? (
+          {answerMessage ? (
+            <div className="empty result-message">{answerMessage}</div>
+          ) : chart?.data?.length ? (
             <Plot data={chart.data as Data[]} layout={chart.layout as Partial<Layout>} className="plot" />
           ) : (
             <div className="empty">Charts are generated after a reviewed query returns plottable data.</div>

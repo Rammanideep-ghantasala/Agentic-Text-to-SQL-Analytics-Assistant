@@ -148,7 +148,6 @@ def generate_sql(
             "provider": "scope_guard",
             "chart": "table",
             "matched": False,
-            "error": "Unsafe data-changing request blocked. Only read-only SELECT analytics questions are allowed.",
         }
     if not is_supported_question(question, memory):
         return {
@@ -156,7 +155,6 @@ def generate_sql(
             "provider": "scope_guard",
             "chart": "table",
             "matched": False,
-            "error": "This project database contains business analytics data only: customers, orders, products, payments, and regions.",
         }
     if provider == "demo" or settings.effective_demo_mode:
         plan = plan_demo_query(question, memory)

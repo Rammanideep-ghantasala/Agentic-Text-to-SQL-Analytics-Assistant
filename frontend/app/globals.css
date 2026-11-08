@@ -427,6 +427,14 @@ th {
   line-height: 1.45;
 }
 
+.result-message {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
 .error,
 .warning {
   border-radius: 8px;
