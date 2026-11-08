@@ -1,6 +1,6 @@
 # Agentic Text-to-SQL Query Assistant
 
-Live demo: `https://your-vercel-app.vercel.app`
+Live demo: `https://agentic-text-to-sql-analytics-assis.vercel.app`
 
 An original deployment-ready Text-to-SQL project for a resume portfolio. It converts natural language business questions into safe SQL with a LangGraph workflow, FastAPI backend, human-in-the-loop review, session memory, RAG over schema and historical queries, self-correction, Plotly dashboards, Matplotlib PNG exports, and model benchmarking.
 
@@ -205,8 +205,8 @@ The schema includes:
 5. Set health check path to `/health`.
 6. Add environment variables:
    - `DATABASE_URL`
-   - `FRONTEND_ORIGIN=https://your-vercel-app.vercel.app`
-   - `CORS_ALLOW_ORIGINS=https://your-vercel-app.vercel.app`
+   - `FRONTEND_ORIGIN=https://agentic-text-to-sql-analytics-assis.vercel.app`
+   - `CORS_ALLOW_ORIGINS=https://agentic-text-to-sql-analytics-assis.vercel.app`
    - `DEMO_MODE=false` for real random-question LLM mode
    - `OPENAI_API_KEY`
    - `OPENAI_MODEL=gpt-4o-mini`
