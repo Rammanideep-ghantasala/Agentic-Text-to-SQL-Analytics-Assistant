@@ -9,7 +9,9 @@ from app.config import Settings
 
 SYSTEM_PROMPT = """You are a senior analytics engineer generating safe SQL for a business analytics database.
 Return exactly one SELECT statement. Do not include markdown, comments, explanations, DDL, DML, or multiple statements.
-Prefer explicit joins. Use only the schema provided. Keep results concise and aggregation-friendly."""
+Prefer explicit joins. Use only the schema provided. Keep results concise and aggregation-friendly.
+Use portable SQLite/PostgreSQL-compatible SQL. For month grouping, use substr(CAST(date_column AS TEXT), 1, 7).
+Avoid DATE_TRUNC, EXTRACT, INTERVAL, and database-specific date functions."""
 
 SUPPORTED_QUESTION_TERMS = {
     "analytics",
@@ -58,10 +60,26 @@ SUPPORTED_QUESTION_TERMS = {
 
 FOLLOW_UP_TERMS = ("now", "group", "filter", "show only", "plot", "chart", "last month", "sort")
 
+UNSAFE_QUESTION_PATTERNS = (
+    r"\b(ignore previous instructions|ignore the previous instructions)\b",
+    r"\b(delete|drop|truncate)\s+all\b",
+    r"\b(drop|delete|truncate|update|insert|alter|create)\b.*\b(table|orders?|customers?|payments?|products?|regions?|data|records?)\b",
+)
+
 UNSUPPORTED_QUESTION_SQL = """
 SELECT
   'This question is outside the available business analytics schema. Try asking about customers, orders, products, payments, or regions.' AS answer
 """
+
+UNSAFE_QUESTION_SQL = """
+SELECT
+  'Unsafe request blocked. This assistant only generates read-only SELECT analytics queries.' AS answer
+"""
+
+
+def is_unsafe_question(question: str) -> bool:
+    normalized = " ".join(question.lower().strip().split())
+    return any(re.search(pattern, normalized) for pattern in UNSAFE_QUESTION_PATTERNS)
 
 
 def is_supported_question(question: str, memory: Dict[str, Any]) -> bool:
@@ -124,6 +142,14 @@ def generate_sql(
     provider: Optional[str] = None,
 ) -> Dict[str, Any]:
     provider = (provider or "").lower()
+    if is_unsafe_question(question):
+        return {
+            "sql": UNSAFE_QUESTION_SQL,
+            "provider": "scope_guard",
+            "chart": "table",
+            "matched": False,
+            "error": "Unsafe data-changing request blocked. Only read-only SELECT analytics questions are allowed.",
+        }
     if not is_supported_question(question, memory):
         return {
             "sql": UNSUPPORTED_QUESTION_SQL,

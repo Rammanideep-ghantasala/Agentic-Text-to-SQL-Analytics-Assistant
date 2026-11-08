@@ -87,6 +87,20 @@ def apply_limit(sql: str, row_limit: int) -> str:
 def deterministic_sql_repair(sql: str, error: str) -> Optional[str]:
     lowered = error.lower()
     repaired = clean_sql(sql)
+    portable = re.sub(
+        r"DATE_TRUNC\(\s*'month'\s*,\s*([^)]+?)\s*\)",
+        r"substr(CAST(\1 AS TEXT), 1, 7)",
+        repaired,
+        flags=re.IGNORECASE,
+    )
+    portable = re.sub(
+        r"EXTRACT\(\s*YEAR\s+FROM\s+([^)]+?)\s*\)\s*=\s*(\d{4})",
+        r"substr(CAST(\1 AS TEXT), 1, 4) = '\2'",
+        portable,
+        flags=re.IGNORECASE,
+    )
+    if portable != repaired and any(term in lowered for term in ["syntax", "date_trunc", "extract"]):
+        return portable
     replacements = {
         "revenue": "total_amount",
         "customer_name": "name",
