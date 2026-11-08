@@ -11,7 +11,9 @@ SYSTEM_PROMPT = """You are a senior analytics engineer generating safe SQL for a
 Return exactly one SELECT statement. Do not include markdown, comments, explanations, DDL, DML, or multiple statements.
 Prefer explicit joins. Use only the schema provided. Keep results concise and aggregation-friendly.
 Use portable SQLite/PostgreSQL-compatible SQL. For month grouping, use substr(CAST(date_column AS TEXT), 1, 7).
-Avoid DATE_TRUNC, EXTRACT, INTERVAL, and database-specific date functions."""
+Avoid DATE_TRUNC, EXTRACT, INTERVAL, and database-specific date functions.
+Known status values: payments.status uses paid, pending, failed; orders.status uses paid, pending, cancelled.
+For completed, successful, settled, or revenue-producing payments, filter with status = 'paid'."""
 
 SUPPORTED_QUESTION_TERMS = {
     "analytics",
@@ -133,6 +135,16 @@ def extract_sql(text: str) -> str:
     return text.strip()
 
 
+def normalize_business_sql(sql: str) -> str:
+    # The seeded analytics data uses "paid"; LLMs often guess completed/succeeded.
+    return re.sub(
+        r"\bstatus\s*=\s*'(completed|complete|success|successful|succeeded|settled|processed)'",
+        "status = 'paid'",
+        sql,
+        flags=re.IGNORECASE,
+    )
+
+
 def generate_sql(
     question: str,
     schema_context: str,
@@ -220,7 +232,7 @@ def generate_with_openai(
         ],
     )
     content = response.choices[0].message.content or ""
-    return {"sql": extract_sql(content), "provider": "openai", "chart": "auto"}
+    return {"sql": normalize_business_sql(extract_sql(content)), "provider": "openai", "chart": "auto"}
 
 
 def generate_with_ollama(
@@ -242,5 +254,5 @@ def generate_with_ollama(
     )
     response.raise_for_status()
     content = response.json().get("response", "")
-    return {"sql": extract_sql(content), "provider": "ollama", "chart": "auto"}
+    return {"sql": normalize_business_sql(extract_sql(content)), "provider": "ollama", "chart": "auto"}
 

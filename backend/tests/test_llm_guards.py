@@ -1,4 +1,4 @@
-from app.agent.llm import generate_sql, is_unsafe_question
+from app.agent.llm import generate_sql, is_unsafe_question, normalize_business_sql
 
 
 class FakeSettings:
@@ -22,3 +22,9 @@ def test_out_of_scope_question_returns_approvable_message_query() -> None:
     assert result["provider"] == "scope_guard"
     assert "outside the available business analytics schema" in result["sql"]
     assert "error" not in result
+
+
+def test_normalizes_common_payment_status_synonyms() -> None:
+    sql = "SELECT method, SUM(amount) FROM payments WHERE status = 'completed' GROUP BY method"
+
+    assert "status = 'paid'" in normalize_business_sql(sql)
