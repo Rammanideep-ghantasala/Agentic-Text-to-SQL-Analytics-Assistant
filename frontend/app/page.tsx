@@ -22,6 +22,8 @@ const fallbackQuestions = [
   "Which sales managers own the most revenue?"
 ];
 
+type BusyAction = "generating" | "executing" | "rejecting" | null;
+
 export default function Home() {
   const [sessionId, setSessionId] = useState("");
   const [question, setQuestion] = useState(fallbackQuestions[0]);
@@ -31,9 +33,12 @@ export default function Home() {
   const [demoQuestions, setDemoQuestions] = useState<string[]>(fallbackQuestions);
   const [editedSql, setEditedSql] = useState("");
   const [booting, setBooting] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [busyAction, setBusyAction] = useState<BusyAction>(null);
   const [error, setError] = useState("");
   const [demoMode, setDemoMode] = useState(true);
+  const loading = busyAction !== null;
+  const isGenerating = busyAction === "generating";
+  const isExecuting = busyAction === "executing";
 
   useEffect(() => {
     async function boot() {
@@ -61,11 +66,20 @@ export default function Home() {
     setHistory(rows);
   }
 
+  function clearGeneratedState() {
+    setDraft(null);
+    setResult(null);
+    setEditedSql("");
+    setError("");
+  }
+
   async function submitQuestion(nextQuestion = question) {
     if (!sessionId || !nextQuestion.trim()) return;
-    setLoading(true);
+    setBusyAction("generating");
     setError("");
+    setDraft(null);
     setResult(null);
+    setEditedSql("");
     try {
       const response = await api.ask(sessionId, nextQuestion.trim());
       setDraft(response);
@@ -74,14 +88,15 @@ export default function Home() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate SQL.");
     } finally {
-      setLoading(false);
+      setBusyAction(null);
     }
   }
 
   async function approve() {
     if (!draft) return;
-    setLoading(true);
+    setBusyAction("executing");
     setError("");
+    setResult(null);
     try {
       const response = await api.approve(draft.query_id);
       setResult(response);
@@ -89,14 +104,15 @@ export default function Home() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to execute SQL.");
     } finally {
-      setLoading(false);
+      setBusyAction(null);
     }
   }
 
   async function submitEdit() {
     if (!draft) return;
-    setLoading(true);
+    setBusyAction("executing");
     setError("");
+    setResult(null);
     try {
       const response = await api.edit(draft.query_id, editedSql, "Reviewer edited SQL before execution.");
       setResult(response);
@@ -104,13 +120,13 @@ export default function Home() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to execute edited SQL.");
     } finally {
-      setLoading(false);
+      setBusyAction(null);
     }
   }
 
   async function reject() {
     if (!draft) return;
-    setLoading(true);
+    setBusyAction("rejecting");
     setError("");
     try {
       await api.reject(draft.query_id, "Reviewer rejected generated SQL.");
@@ -120,13 +136,21 @@ export default function Home() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to reject SQL.");
     } finally {
-      setLoading(false);
+      setBusyAction(null);
     }
   }
 
   const chart = result?.plotly_json;
   const hasRows = Boolean(result?.rows?.length);
   const pngUrl = useMemo(() => (result ? `${API_URL}/chart/${result.query_id}?format=png` : ""), [result]);
+  const draftHasIssue = Boolean(
+    draft?.error || ["generation_failed", "validation_failed"].includes(draft?.status || "")
+  );
+  const resultHasIssue = Boolean(
+    result?.error || ["execution_failed", "validation_failed"].includes(result?.status || "")
+  );
+  const queryHasIssue = draftHasIssue || resultHasIssue;
+  const canRunSql = Boolean(draft && editedSql.trim() && !loading && !draftHasIssue);
 
   if (booting) {
     return (
@@ -172,9 +196,10 @@ export default function Home() {
                 key={item}
                 type="button"
                 className="question-chip"
+                disabled={loading}
                 onClick={() => {
                   setQuestion(item);
-                  void submitQuestion(item);
+                  clearGeneratedState();
                 }}
               >
                 {item}
@@ -195,8 +220,12 @@ export default function Home() {
                 key={item.query_id}
                 type="button"
                 className="history-item"
+                disabled={loading}
                 onClick={() => {
                   setQuestion(item.question);
+                  setDraft(null);
+                  setResult(null);
+                  setError("");
                   setEditedSql(item.final_sql || item.generated_sql || "");
                 }}
               >
@@ -223,12 +252,15 @@ export default function Home() {
         <section className="ask-panel">
           <textarea
             value={question}
-            onChange={(event) => setQuestion(event.target.value)}
+            onChange={(event) => {
+              setQuestion(event.target.value);
+              clearGeneratedState();
+            }}
             placeholder="Ask about revenue, customers, products, regions, or payments..."
           />
           <button type="button" className="primary" onClick={() => void submitQuestion()} disabled={loading || !sessionId}>
-            <Send size={18} />
-            Generate SQL
+            {isGenerating ? <LoaderCircle className="inline-spinner" size={18} /> : <Send size={18} />}
+            {isGenerating ? "Generating" : "Generate SQL"}
           </button>
         </section>
 
@@ -238,21 +270,30 @@ export default function Home() {
           <section className="panel sql-panel">
             <div className="section-heading">
               <span>SQL Preview</span>
-              <small>{draft?.status || "waiting"}</small>
+              <small>{isGenerating ? "generating" : draft?.status || "waiting"}</small>
             </div>
-            <textarea
-              className="sql-editor"
-              value={editedSql}
-              onChange={(event) => setEditedSql(event.target.value)}
-              spellCheck={false}
-              placeholder="Generated SQL will appear here."
-            />
+            <div className="sql-editor-wrap">
+              {isGenerating && (
+                <div className="sql-loading" aria-live="polite">
+                  <LoaderCircle size={20} />
+                  <span>Generating SQL query...</span>
+                </div>
+              )}
+              <textarea
+                className="sql-editor"
+                value={editedSql}
+                onChange={(event) => setEditedSql(event.target.value)}
+                spellCheck={false}
+                readOnly={isGenerating}
+                placeholder={isGenerating ? "" : "Generated SQL will appear here."}
+              />
+            </div>
             <div className="review-actions">
-              <button type="button" className="approve" onClick={() => void approve()} disabled={!draft || loading || !editedSql.trim()}>
+              <button type="button" className="approve" onClick={() => void approve()} disabled={!canRunSql}>
                 <Check size={18} />
                 Approve
               </button>
-              <button type="button" className="secondary" onClick={() => void submitEdit()} disabled={!draft || loading || !editedSql.trim()}>
+              <button type="button" className="secondary" onClick={() => void submitEdit()} disabled={!canRunSql}>
                 <Play size={18} />
                 Run Edit
               </button>
@@ -267,9 +308,18 @@ export default function Home() {
           <section className="panel">
             <div className="section-heading">
               <span>Execution Result</span>
-              <small>{result?.status || "not run"}</small>
+              <small>{isExecuting ? "running" : result?.status || "not run"}</small>
             </div>
-            {hasRows ? (
+            {isExecuting ? (
+              <div className="empty loading-empty">
+                <LoaderCircle size={20} />
+                <span>Executing approved query...</span>
+              </div>
+            ) : queryHasIssue ? (
+              <div className="empty result-error">
+                Please regenerate the query as there are some errors in the question.
+              </div>
+            ) : hasRows ? (
               <div className="table-wrap">
                 <table>
                   <thead>
