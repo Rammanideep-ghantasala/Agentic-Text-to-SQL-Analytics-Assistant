@@ -26,7 +26,7 @@ type BusyAction = "generating" | "executing" | "rejecting" | null;
 
 export default function Home() {
   const [sessionId, setSessionId] = useState("");
-  const [question, setQuestion] = useState(fallbackQuestions[0]);
+  const [question, setQuestion] = useState("");
   const [draft, setDraft] = useState<QueryDraft | null>(null);
   const [result, setResult] = useState<QueryResult | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
