@@ -35,6 +35,7 @@ export default function Home() {
   const [booting, setBooting] = useState(true);
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
   const [error, setError] = useState("");
+  const [resultNotice, setResultNotice] = useState("");
   const [demoMode, setDemoMode] = useState(true);
   const loading = busyAction !== null;
   const isGenerating = busyAction === "generating";
@@ -71,6 +72,7 @@ export default function Home() {
     setResult(null);
     setEditedSql("");
     setError("");
+    setResultNotice("");
   }
 
   async function submitQuestion(nextQuestion = question) {
@@ -79,6 +81,7 @@ export default function Home() {
     setError("");
     setDraft(null);
     setResult(null);
+    setResultNotice("");
     setEditedSql("");
     try {
       const response = await api.ask(sessionId, nextQuestion.trim());
@@ -93,10 +96,22 @@ export default function Home() {
   }
 
   async function approve() {
-    if (!draft) return;
+    if (!draft || !editedSql.trim()) {
+      setError("");
+      setResult(null);
+      setResultNotice("No SQL query to approve. Generate a SQL query first.");
+      return;
+    }
+    if (draftHasIssue) {
+      setError("");
+      setResult(null);
+      setResultNotice("This generated query has an issue. Please regenerate the query before approval.");
+      return;
+    }
     setBusyAction("executing");
     setError("");
     setResult(null);
+    setResultNotice("");
     try {
       const response = await api.approve(draft.query_id);
       setResult(response);
@@ -109,10 +124,22 @@ export default function Home() {
   }
 
   async function submitEdit() {
-    if (!draft) return;
+    if (!draft || !editedSql.trim()) {
+      setError("");
+      setResult(null);
+      setResultNotice("No SQL query to run. Generate or enter SQL first.");
+      return;
+    }
+    if (draftHasIssue) {
+      setError("");
+      setResult(null);
+      setResultNotice("This generated query has an issue. Please regenerate the query before running it.");
+      return;
+    }
     setBusyAction("executing");
     setError("");
     setResult(null);
+    setResultNotice("");
     try {
       const response = await api.edit(draft.query_id, editedSql, "Reviewer edited SQL before execution.");
       setResult(response);
@@ -128,6 +155,7 @@ export default function Home() {
     if (!draft) return;
     setBusyAction("rejecting");
     setError("");
+    setResultNotice("");
     try {
       await api.reject(draft.query_id, "Reviewer rejected generated SQL.");
       setDraft(null);
@@ -155,7 +183,6 @@ export default function Home() {
     result?.error || ["execution_failed", "validation_failed"].includes(result?.status || "")
   );
   const queryHasIssue = draftHasIssue || resultHasIssue;
-  const canRunSql = Boolean(draft && editedSql.trim() && !loading && !draftHasIssue);
 
   if (booting) {
     return (
@@ -228,10 +255,25 @@ export default function Home() {
                 disabled={loading}
                 onClick={() => {
                   setQuestion(item.question);
-                  setDraft(null);
+                  const sql = item.final_sql || item.corrected_sql || item.generated_sql || "";
+                  setDraft(
+                    sql
+                      ? {
+                          query_id: item.query_id,
+                          session_id: sessionId,
+                          question: item.question,
+                          generated_sql: item.generated_sql || sql,
+                          status: item.status,
+                          requires_review: true,
+                          demo_mode: demoMode,
+                          error: item.error || undefined
+                        }
+                      : null
+                  );
                   setResult(null);
                   setError("");
-                  setEditedSql(item.final_sql || item.generated_sql || "");
+                  setResultNotice("");
+                  setEditedSql(sql);
                 }}
               >
                 <span>{item.question}</span>
@@ -294,11 +336,11 @@ export default function Home() {
               />
             </div>
             <div className="review-actions">
-              <button type="button" className="approve" onClick={() => void approve()} disabled={!canRunSql}>
+              <button type="button" className="approve" onClick={() => void approve()} disabled={loading}>
                 <Check size={18} />
                 Approve
               </button>
-              <button type="button" className="secondary" onClick={() => void submitEdit()} disabled={!canRunSql}>
+              <button type="button" className="secondary" onClick={() => void submitEdit()} disabled={loading}>
                 <Play size={18} />
                 Run Edit
               </button>
@@ -320,6 +362,8 @@ export default function Home() {
                 <LoaderCircle size={20} />
                 <span>Executing approved query...</span>
               </div>
+            ) : resultNotice ? (
+              <div className="empty result-message">{resultNotice}</div>
             ) : queryHasIssue ? (
               <div className="empty result-error">
                 Please regenerate the query as there are some errors in the question.
@@ -360,7 +404,9 @@ export default function Home() {
               </a>
             )}
           </div>
-          {answerMessage ? (
+          {resultNotice ? (
+            <div className="empty result-message">{resultNotice}</div>
+          ) : answerMessage ? (
             <div className="empty result-message">{answerMessage}</div>
           ) : chart?.data?.length ? (
             <Plot data={chart.data as Data[]} layout={chart.layout as Partial<Layout>} className="plot" />
