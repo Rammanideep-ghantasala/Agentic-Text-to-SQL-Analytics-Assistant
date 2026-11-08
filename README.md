@@ -1,5 +1,7 @@
 # Agentic Text-to-SQL Query Assistant
 
+[![CI](https://github.com/Rammanideep-ghantasala/Agentic-Text-to-SQL-Analytics-Assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Rammanideep-ghantasala/Agentic-Text-to-SQL-Analytics-Assistant/actions/workflows/ci.yml)
+
 Live demo: `https://agentic-text-to-sql-analytics-assis.vercel.app`
 
 An original deployment-ready Text-to-SQL project for a resume portfolio. It converts natural language business questions into safe SQL with a LangGraph workflow, FastAPI backend, human-in-the-loop review, session memory, RAG over schema and historical queries, self-correction, Plotly dashboards, Matplotlib PNG exports, and model benchmarking.
