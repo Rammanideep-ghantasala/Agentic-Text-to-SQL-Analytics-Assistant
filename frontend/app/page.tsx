@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import type { Data, Layout } from "plotly.js";
 import type { PlotParams } from "react-plotly.js";
 import { useEffect, useMemo, useState } from "react";
-import { Check, Database, Download, History, Play, RefreshCw, Send, ShieldCheck, X } from "lucide-react";
+import { Check, Database, Download, History, LoaderCircle, Play, RefreshCw, Send, ShieldCheck, X } from "lucide-react";
 import { API_URL, HistoryItem, QueryDraft, QueryResult, api } from "@/lib/api";
 
 const Plot = dynamic<PlotParams>(() => import("react-plotly.js"), { ssr: false });
@@ -30,6 +30,7 @@ export default function Home() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [demoQuestions, setDemoQuestions] = useState<string[]>(fallbackQuestions);
   const [editedSql, setEditedSql] = useState("");
+  const [booting, setBooting] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [demoMode, setDemoMode] = useState(true);
@@ -47,6 +48,8 @@ export default function Home() {
         setDemoQuestions(questions.questions);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unable to reach backend.");
+      } finally {
+        setBooting(false);
       }
     }
     boot();
@@ -124,6 +127,23 @@ export default function Home() {
   const chart = result?.plotly_json;
   const hasRows = Boolean(result?.rows?.length);
   const pngUrl = useMemo(() => (result ? `${API_URL}/chart/${result.query_id}?format=png` : ""), [result]);
+
+  if (booting) {
+    return (
+      <main className="startup-screen">
+        <section className="startup-panel" aria-live="polite">
+          <div className="startup-icon">
+            <LoaderCircle size={34} />
+          </div>
+          <p className="eyebrow">Please wait</p>
+          <h1>Loading in progress</h1>
+          <p>
+            The backend is hosted on free Render, so the first request can take 30-60 seconds while the service wakes up.
+          </p>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="shell">
@@ -228,11 +248,11 @@ export default function Home() {
               placeholder="Generated SQL will appear here."
             />
             <div className="review-actions">
-              <button type="button" className="approve" onClick={() => void approve()} disabled={!draft || loading}>
+              <button type="button" className="approve" onClick={() => void approve()} disabled={!draft || loading || !editedSql.trim()}>
                 <Check size={18} />
                 Approve
               </button>
-              <button type="button" className="secondary" onClick={() => void submitEdit()} disabled={!draft || loading}>
+              <button type="button" className="secondary" onClick={() => void submitEdit()} disabled={!draft || loading || !editedSql.trim()}>
                 <Play size={18} />
                 Run Edit
               </button>

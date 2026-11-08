@@ -11,6 +11,66 @@ SYSTEM_PROMPT = """You are a senior analytics engineer generating safe SQL for a
 Return exactly one SELECT statement. Do not include markdown, comments, explanations, DDL, DML, or multiple statements.
 Prefer explicit joins. Use only the schema provided. Keep results concise and aggregation-friendly."""
 
+SUPPORTED_QUESTION_TERMS = {
+    "analytics",
+    "amount",
+    "average",
+    "business",
+    "cancelled",
+    "category",
+    "customer",
+    "customers",
+    "dashboard",
+    "date",
+    "failed",
+    "gross",
+    "highest",
+    "item",
+    "items",
+    "manager",
+    "margin",
+    "method",
+    "month",
+    "monthly",
+    "order",
+    "orders",
+    "paid",
+    "payment",
+    "payments",
+    "pending",
+    "product",
+    "products",
+    "quantity",
+    "region",
+    "regions",
+    "repeat",
+    "revenue",
+    "sales",
+    "sell",
+    "selling",
+    "segment",
+    "spend",
+    "status",
+    "table",
+    "top",
+    "total",
+}
+
+FOLLOW_UP_TERMS = ("now", "group", "filter", "show only", "plot", "chart", "last month", "sort")
+
+UNSUPPORTED_QUESTION_SQL = """
+SELECT
+  'This question is outside the available business analytics schema. Try asking about customers, orders, products, payments, or regions.' AS answer
+"""
+
+
+def is_supported_question(question: str, memory: Dict[str, Any]) -> bool:
+    normalized = " ".join(question.lower().strip().split())
+    if memory.get("last_sql") and any(term in normalized for term in FOLLOW_UP_TERMS):
+        return True
+    tokens = set(re.findall(r"[a-z_]+", normalized))
+    return bool(tokens & SUPPORTED_QUESTION_TERMS)
+
 
 def build_user_prompt(
     question: str,
@@ -64,6 +124,14 @@ def generate_sql(
     provider: Optional[str] = None,
 ) -> Dict[str, Any]:
     provider = (provider or "").lower()
+    if not is_supported_question(question, memory):
+        return {
+            "sql": UNSUPPORTED_QUESTION_SQL,
+            "provider": "scope_guard",
+            "chart": "table",
+            "matched": False,
+            "error": "This project database contains business analytics data only: customers, orders, products, payments, and regions.",
+        }
     if provider == "demo" or settings.effective_demo_mode:
         plan = plan_demo_query(question, memory)
         return {
