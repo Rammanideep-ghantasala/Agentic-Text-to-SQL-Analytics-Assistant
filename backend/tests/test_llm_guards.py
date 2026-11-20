@@ -7,7 +7,7 @@ class FakeSettings:
     openai_api_key = None
     groq_api_key = None
     groq_base_url = "https://api.groq.com/openai/v1"
-    groq_model = "llama-3.3-70b-versatile"
+    groq_model = "openai/gpt-oss-120b"
     ollama_base_url = None
 
 

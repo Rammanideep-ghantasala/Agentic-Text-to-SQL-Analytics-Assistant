@@ -168,7 +168,7 @@ Backend:
 | `OPENAI_MODEL` | Optional | Defaults to `gpt-4o-mini` for low-cost resume demos. |
 | `GROQ_API_KEY` | Optional | Enables Groq SQL generation through its OpenAI-compatible API. |
 | `GROQ_BASE_URL` | Optional | Defaults to `https://api.groq.com/openai/v1`. |
-| `GROQ_MODEL` | Optional | Defaults to `llama-3.3-70b-versatile`. |
+| `GROQ_MODEL` | Optional | Defaults to `openai/gpt-oss-120b`. |
 | `OLLAMA_BASE_URL` | Optional | Enables Ollama model calls, for example `http://localhost:11434`. |
 | `OLLAMA_MODEL` | Optional | Defaults to `llama2`. |
 | `LLM_ACCESS_TOKEN` | Optional | Requires frontend or API clients to send `X-LLM-Access-Token` for expensive calls. |

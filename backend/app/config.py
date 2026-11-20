@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
     groq_api_key: Optional[str] = Field(default=None, alias="GROQ_API_KEY")
     groq_base_url: str = Field(default="https://api.groq.com/openai/v1", alias="GROQ_BASE_URL")
-    groq_model: str = Field(default="llama-3.3-70b-versatile", alias="GROQ_MODEL")
+    groq_model: str = Field(default="openai/gpt-oss-120b", alias="GROQ_MODEL")
     ollama_base_url: Optional[str] = Field(default=None, alias="OLLAMA_BASE_URL")
     ollama_model: str = Field(default="llama2", alias="OLLAMA_MODEL")
 
