@@ -9,6 +9,7 @@ export type HealthResponse = {
   demo_mode: boolean;
   llm_providers: {
     openai: boolean;
+    groq: boolean;
     ollama: boolean;
   };
 };

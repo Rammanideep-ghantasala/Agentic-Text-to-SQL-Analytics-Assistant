@@ -24,6 +24,12 @@ services:
         sync: false
       - key: OPENAI_MODEL
         value: gpt-4o-mini
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
       - key: OLLAMA_BASE_URL
         sync: false
       - key: LLM_ACCESS_TOKEN

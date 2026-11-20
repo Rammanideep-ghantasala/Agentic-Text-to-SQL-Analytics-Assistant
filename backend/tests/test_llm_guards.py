@@ -1,9 +1,13 @@
+import app.agent.llm as llm_module
 from app.agent.llm import generate_sql, is_unsafe_question, normalize_business_sql
 
 
 class FakeSettings:
     effective_demo_mode = False
     openai_api_key = None
+    groq_api_key = None
+    groq_base_url = "https://api.groq.com/openai/v1"
+    groq_model = "llama-3.3-70b-versatile"
     ollama_base_url = None
 
 
@@ -39,3 +43,17 @@ def test_demo_fallback_generates_sql_without_llm_keys() -> None:
 
     assert result["provider"] == "demo"
     assert result["sql"].strip().lower().startswith("select")
+
+
+def test_routes_to_groq_when_only_groq_key_is_configured(monkeypatch) -> None:
+    class GroqOnlySettings(FakeSettings):
+        groq_api_key = "fake-groq-key"
+
+    def fake_groq(*args, **kwargs):
+        return {"sql": "SELECT 1", "provider": "groq", "chart": "auto"}
+
+    monkeypatch.setattr(llm_module, "generate_with_groq", fake_groq)
+
+    result = generate_sql("Show revenue by region", "", "", {}, GroqOnlySettings())
+
+    assert result["provider"] == "groq"

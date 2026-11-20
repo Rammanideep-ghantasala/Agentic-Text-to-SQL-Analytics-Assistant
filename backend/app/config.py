@@ -21,6 +21,9 @@ class Settings(BaseSettings):
 
     openai_api_key: Optional[str] = Field(default=None, alias="OPENAI_API_KEY")
     openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
+    groq_api_key: Optional[str] = Field(default=None, alias="GROQ_API_KEY")
+    groq_base_url: str = Field(default="https://api.groq.com/openai/v1", alias="GROQ_BASE_URL")
+    groq_model: str = Field(default="llama-3.3-70b-versatile", alias="GROQ_MODEL")
     ollama_base_url: Optional[str] = Field(default=None, alias="OLLAMA_BASE_URL")
     ollama_model: str = Field(default="llama2", alias="OLLAMA_MODEL")
 
@@ -35,7 +38,7 @@ class Settings(BaseSettings):
 
     @property
     def effective_demo_mode(self) -> bool:
-        return self.demo_mode or not (self.openai_api_key or self.ollama_base_url)
+        return self.demo_mode or not (self.openai_api_key or self.groq_api_key or self.ollama_base_url)
 
     @property
     def allowed_origins(self) -> List[str]:

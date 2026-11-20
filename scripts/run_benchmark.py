@@ -12,7 +12,7 @@ import requests
 def main() -> int:
     parser = argparse.ArgumentParser(description="Benchmark configured Text-to-SQL providers.")
     parser.add_argument("--api-url", default="http://localhost:8000", help="Backend API URL.")
-    parser.add_argument("--providers", default="openai,ollama", help="Comma-separated providers: openai,ollama,demo.")
+    parser.add_argument("--providers", default="openai,groq,ollama", help="Comma-separated providers: openai,groq,ollama,demo.")
     parser.add_argument("--token", default=None, help="Optional X-LLM-Access-Token value.")
     args = parser.parse_args()
 

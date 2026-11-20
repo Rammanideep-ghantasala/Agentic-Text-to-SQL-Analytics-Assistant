@@ -24,9 +24,11 @@ def provider_available(provider: str) -> tuple[bool, str]:
     settings = get_settings()
     if provider == "openai" and not settings.openai_api_key:
         return False, "OPENAI_API_KEY is not configured."
+    if provider == "groq" and not settings.groq_api_key:
+        return False, "GROQ_API_KEY is not configured."
     if provider == "ollama" and not settings.ollama_base_url:
         return False, "OLLAMA_BASE_URL is not configured."
-    if provider not in {"openai", "ollama", "demo"}:
+    if provider not in {"openai", "groq", "ollama", "demo"}:
         return False, f"Unknown provider: {provider}"
     return True, "available"
 

@@ -178,6 +178,8 @@ def generate_sql(
             "match_score": plan.get("match_score"),
             "error": plan.get("error"),
         }
+    if provider == "groq" or (not provider and settings.groq_api_key and not settings.openai_api_key):
+        return generate_with_groq(question, schema_context, historical_context, memory, settings)
     if provider == "ollama":
         return generate_with_ollama(question, schema_context, historical_context, memory, settings)
     return generate_with_openai(question, schema_context, historical_context, memory, settings)
@@ -197,7 +199,9 @@ def correct_sql(
         return None
     try:
         provider = (provider or "").lower()
-        if provider == "ollama":
+        if provider == "groq" or (not provider and settings.groq_api_key and not settings.openai_api_key):
+            result = generate_with_groq(question, schema_context, historical_context, memory, settings, failed_sql, error)
+        elif provider == "ollama":
             result = generate_with_ollama(question, schema_context, historical_context, memory, settings, failed_sql, error)
         else:
             result = generate_with_openai(question, schema_context, historical_context, memory, settings, failed_sql, error)
@@ -233,6 +237,35 @@ def generate_with_openai(
     )
     content = response.choices[0].message.content or ""
     return {"sql": normalize_business_sql(extract_sql(content)), "provider": "openai", "chart": "auto"}
+
+
+def generate_with_groq(
+    question: str,
+    schema_context: str,
+    historical_context: str,
+    memory: Dict[str, Any],
+    settings: Settings,
+    failed_sql: Optional[str] = None,
+    error: Optional[str] = None,
+) -> Dict[str, Any]:
+    if not settings.groq_api_key:
+        raise RuntimeError("GROQ_API_KEY is not configured.")
+    from openai import OpenAI
+
+    client = OpenAI(api_key=settings.groq_api_key, base_url=settings.groq_base_url)
+    response = client.chat.completions.create(
+        model=settings.groq_model,
+        temperature=0,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {
+                "role": "user",
+                "content": build_user_prompt(question, schema_context, historical_context, memory, failed_sql, error),
+            },
+        ],
+    )
+    content = response.choices[0].message.content or ""
+    return {"sql": normalize_business_sql(extract_sql(content)), "provider": "groq", "chart": "auto"}
 
 
 def generate_with_ollama(

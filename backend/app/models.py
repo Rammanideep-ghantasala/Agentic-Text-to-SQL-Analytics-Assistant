@@ -11,7 +11,7 @@ class SessionResponse(BaseModel):
 class QueryRequest(BaseModel):
     question: str = Field(..., min_length=2)
     session_id: Optional[str] = None
-    provider: Optional[str] = Field(default=None, description="openai, ollama, or demo")
+    provider: Optional[str] = Field(default=None, description="openai, groq, ollama, or demo")
 
 
 class QueryDraftResponse(BaseModel):
@@ -70,6 +70,6 @@ class SchemaResponse(BaseModel):
 
 
 class BenchmarkRequest(BaseModel):
-    providers: List[str] = Field(default_factory=lambda: ["openai", "ollama"])
+    providers: List[str] = Field(default_factory=lambda: ["openai", "groq", "ollama"])
     questions: Optional[List[str]] = None
 

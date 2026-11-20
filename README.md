@@ -35,7 +35,7 @@ The app is designed for:
 - Session memory for follow-up questions
 - Plotly chart JSON response
 - Optional Matplotlib PNG export
-- Demo mode when `OPENAI_API_KEY` and `OLLAMA_BASE_URL` are unavailable
+- Demo mode when `OPENAI_API_KEY`, `GROQ_API_KEY`, and `OLLAMA_BASE_URL` are unavailable
 - Rate limiting and optional `X-LLM-Access-Token` protection for expensive calls
 - Benchmark endpoint and script for GPT-4/OpenAI and LLaMA-2/Ollama when configured
 
@@ -163,9 +163,12 @@ Backend:
 | `DATABASE_URL` | Production yes | Supabase or Postgres connection string. If missing, local SQLite demo mode is used. |
 | `FRONTEND_ORIGIN` | Yes | Vercel frontend URL for CORS. |
 | `CORS_ALLOW_ORIGINS` | Optional | Comma-separated extra allowed origins. |
-| `DEMO_MODE` | Optional | Set to `false` for real OpenAI SQL generation. If no LLM key is configured, the app safely falls back to demo mode. |
+| `DEMO_MODE` | Optional | Set to `false` for real LLM SQL generation. If no LLM key is configured, the app safely falls back to demo mode. |
 | `OPENAI_API_KEY` | Optional | Enables OpenAI SQL generation. |
 | `OPENAI_MODEL` | Optional | Defaults to `gpt-4o-mini` for low-cost resume demos. |
+| `GROQ_API_KEY` | Optional | Enables Groq SQL generation through its OpenAI-compatible API. |
+| `GROQ_BASE_URL` | Optional | Defaults to `https://api.groq.com/openai/v1`. |
+| `GROQ_MODEL` | Optional | Defaults to `llama-3.3-70b-versatile`. |
 | `OLLAMA_BASE_URL` | Optional | Enables Ollama model calls, for example `http://localhost:11434`. |
 | `OLLAMA_MODEL` | Optional | Defaults to `llama2`. |
 | `LLM_ACCESS_TOKEN` | Optional | Requires frontend or API clients to send `X-LLM-Access-Token` for expensive calls. |
@@ -212,6 +215,7 @@ The schema includes:
    - `DEMO_MODE=false` for real random-question LLM mode
    - `OPENAI_API_KEY`
    - `OPENAI_MODEL=gpt-4o-mini`
+   - Optional `GROQ_API_KEY`, `GROQ_BASE_URL`, `GROQ_MODEL`
    - Optional `OLLAMA_BASE_URL`, `OLLAMA_MODEL`
    - Optional `LLM_ACCESS_TOKEN`
 7. Deploy and confirm `https://your-render-service.onrender.com/health`.
@@ -312,12 +316,12 @@ curl -o chart.png "http://localhost:8000/chart/QUERY_ID?format=png"
 
 ## Benchmarking
 
-The benchmark does not fake results. If OpenAI or Ollama is unavailable, the provider is returned as `skipped` with a clear reason.
+The benchmark does not fake results. If OpenAI, Groq, or Ollama is unavailable, the provider is returned as `skipped` with a clear reason.
 
 Start the backend, then run:
 
 ```bash
-python scripts/run_benchmark.py --api-url http://localhost:8000 --providers openai,ollama
+python scripts/run_benchmark.py --api-url http://localhost:8000 --providers openai,groq,ollama
 ```
 
 With protected LLM mode:
@@ -325,7 +329,7 @@ With protected LLM mode:
 ```bash
 python scripts/run_benchmark.py \
   --api-url https://your-render-service.onrender.com \
-  --providers openai,ollama \
+  --providers openai,groq,ollama \
   --token your-llm-access-token
 ```
 

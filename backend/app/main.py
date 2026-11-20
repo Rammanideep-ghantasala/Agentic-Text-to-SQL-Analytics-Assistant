@@ -57,6 +57,7 @@ def health() -> Dict[str, Any]:
         "demo_mode": settings.effective_demo_mode,
         "llm_providers": {
             "openai": bool(settings.openai_api_key),
+            "groq": bool(settings.groq_api_key),
             "ollama": bool(settings.ollama_base_url),
         },
     }
